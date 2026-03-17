@@ -10,17 +10,30 @@ class PDFPipeline:
         self.filters = filters
 
     def run(self):
-        links = self.crawler.fetch_pdf_links()
+        batch_size = 10
+        start = 0
+        successful = 0
 
-        for i, link in enumerate(links):
-            filename = f"{self.crawler.topic}_{i}.pdf"
+        while successful < self.crawler.max_docs:
+            links = self.crawler.fetch_pdf_links_batch(batch_size, start)
+            if not links:
+                break
+            start += len(links)
 
-            success = self.downloader.download(link, filename)
+            for link in links:
+                if successful >= self.crawler.max_docs:
+                    break
 
-            if not success:
-                continue
+                filename = f"{self.crawler.topic}_{successful}.pdf"
+                success = self.downloader.download(link, filename)
 
-            path = os.path.join(self.downloader.save_dir, filename)
+                if not success:
+                    continue
 
-            if not self.filters(path):
-                os.remove(path)
+                path = os.path.join(self.downloader.save_dir, filename)
+
+                if not self.filters(path):
+                    os.remove(path)
+                    continue
+
+                successful += 1

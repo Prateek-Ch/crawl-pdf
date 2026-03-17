@@ -7,7 +7,10 @@ import xml.etree.ElementTree as ET
 class ArxivCrawler(BaseCrawler):
 
     def fetch_pdf_links(self):
-        url = f"http://export.arxiv.org/api/query?search_query=cat:{self.topic}&max_results={self.max_docs}"
+        return self.fetch_pdf_links_batch(self.max_docs, 0)
+
+    def fetch_pdf_links_batch(self, max_results, start=0):
+        url = f"http://export.arxiv.org/api/query?search_query=cat:{self.topic}&max_results={max_results}&start={start}"
         response = requests.get(url)
 
         root = ET.fromstring(response.content)
