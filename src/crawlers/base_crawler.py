@@ -7,5 +7,5 @@ class BaseCrawler(ABC):
         self.max_docs = max_docs
 
     @abstractmethod
-    def fetch_pdf_links(self):
+    def fetch_pdf_links(self) -> list:
         pass
