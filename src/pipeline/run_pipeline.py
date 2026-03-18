@@ -5,14 +5,17 @@ from src.pipeline.pipeline import PDFPipeline
 from src.download.metadata import MetadataStore
 
 def main():
-    topic = "cs.AI"
 
-    crawler = ArxivCrawler(topic, max_docs=2)
-    downloader = PDFDownloader(save_dir=f"data/raw/{topic}")
+    crawlers = [
+    ArxivCrawler("cs.AI", max_docs=2),
+    ArxivCrawler("math.PR", max_docs=2)
+    ]
+    
+    downloader = PDFDownloader(save_dir=f"data/raw/")
     store = MetadataStore("data/metadata.json")
 
     pipeline = PDFPipeline(
-        crawler=crawler,
+        crawlers=crawlers,
         downloader=downloader,
         filters=is_valid_pdf,
         metadata_store=store
