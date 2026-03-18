@@ -1,7 +1,7 @@
-# src/crawlers/arxiv_crawler.py
-
 import requests
 from .base_crawler import BaseCrawler
+from .document import Document
+
 import xml.etree.ElementTree as ET
 
 class ArxivCrawler(BaseCrawler):
@@ -15,11 +15,25 @@ class ArxivCrawler(BaseCrawler):
 
         root = ET.fromstring(response.content)
 
-        links = []
+        docs = []
         for entry in root.findall("{http://www.w3.org/2005/Atom}entry"):
             id_elem = entry.find("{http://www.w3.org/2005/Atom}id")
+            title_elem = entry.find("{http://www.w3.org/2005/Atom}title")
+            if id_elem is None or title_elem is None:
+                continue
+            
+            pdf_link = None
             if id_elem is not None and id_elem.text is not None:
                 pdf_link = id_elem.text.replace("abs", "pdf") + ".pdf"
-                links.append(pdf_link)
 
-        return links
+            docs.append(
+                Document(
+                    url=pdf_link,
+                    title=title_elem.text if title_elem is not None else None,
+                    topic=self.topic,
+                    source="arxiv",
+                    doc_type="research_paper"
+                )
+            )
+
+        return docs

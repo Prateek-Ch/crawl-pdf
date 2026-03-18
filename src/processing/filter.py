@@ -1,8 +1,9 @@
 from PyPDF2 import PdfReader
 
-def is_valid_pdf(path, min_pages=30):
+def is_valid_pdf(doc, min_pages=30):
     try:
-        reader = PdfReader(path)
-        return len(reader.pages) >= min_pages
+        reader = PdfReader(doc.path)
+        doc.pages = len(reader.pages)
+        return doc.pages >= min_pages
     except:
         return False
