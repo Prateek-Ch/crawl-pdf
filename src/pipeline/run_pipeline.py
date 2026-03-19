@@ -12,7 +12,7 @@ def main():
     ArxivCrawler("cs.AI", max_docs=2),
     ArxivCrawler("math.PR", max_docs=2),
     OpenAlexCrawler("machine learning", max_docs=2),
-    InternetArchiveCrawler("data science", max_docs=2),
+    InternetArchiveCrawler("data science books", max_docs=2),
     ]
     
     downloader = PDFDownloader(save_dir=f"data/raw/")

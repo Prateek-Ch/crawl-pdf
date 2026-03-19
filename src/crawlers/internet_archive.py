@@ -1,5 +1,5 @@
 # Books
-import requests
+
 from .base_crawler import BaseCrawler
 from .document import Document
 
@@ -19,17 +19,22 @@ class InternetArchiveCrawler(BaseCrawler):
             "output": "json"
         }
 
-        response = requests.get(self.SEARCH_URL, params=params)
+        response = self.safe_request(self.SEARCH_URL, params)
 
-        if response.status_code != 200:
+        if response is None:
             return []
 
-        data = response.json()
+        try:
+            data = response.json()
+        except Exception:
+            print(f"[{self.__class__.__name__}] JSON parse failed")
+            return []
+
         docs = []
 
-        for doc in data["response"]["docs"]:
-            identifier = doc.get("identifier")
-            title = doc.get("title")
+        for item in data.get("response", {}).get("docs", []):
+            identifier = item.get("identifier")
+            title = item.get("title")
 
             if not identifier:
                 continue
@@ -46,4 +51,5 @@ class InternetArchiveCrawler(BaseCrawler):
                 )
             )
 
+        self.throttle()
         return docs

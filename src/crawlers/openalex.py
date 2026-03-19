@@ -1,6 +1,5 @@
 # research papers
 
-import requests
 from .base_crawler import BaseCrawler
 from .document import Document
 
@@ -18,18 +17,22 @@ class OpenAlexCrawler(BaseCrawler):
             "page": (start // max_results) + 1
         }
 
-        response = requests.get(self.BASE_URL, params=params)
+        response = self.safe_request(self.BASE_URL, params)
 
-        if response.status_code != 200:
+        if response is None:
             return []
 
-        data = response.json()
+        try:
+            data = response.json()
+        except Exception:
+            print(f"[{self.__class__.__name__}] JSON parse failed")
+            return []
+
         docs = []
 
         for work in data.get("results", []):
             pdf_url = None
 
-            # Try Open Access PDF
             if work.get("open_access"):
                 pdf_url = work["open_access"].get("oa_url")
 
@@ -46,4 +49,5 @@ class OpenAlexCrawler(BaseCrawler):
                 )
             )
 
+        self.throttle()
         return docs
