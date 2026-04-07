@@ -6,6 +6,11 @@ from .document import Document
 class InternetArchiveCrawler(BaseCrawler):
 
     SEARCH_URL = "https://archive.org/advancedsearch.php"
+
+    def __init__(self, topic, max_docs, doc_type="book", min_pages=None):
+        super().__init__(topic, max_docs)
+        self.doc_type = doc_type
+        self.min_pages = min_pages
     
     def fetch_pdf_links(self):
         return self.fetch_pdf_links_batch(self.max_docs, 0)
@@ -47,7 +52,8 @@ class InternetArchiveCrawler(BaseCrawler):
                     title=title,
                     topic=self.topic,
                     source="internet_archive",
-                    doc_type="book"
+                    doc_type=self.doc_type,
+                    min_pages=self.min_pages
                 )
             )
 

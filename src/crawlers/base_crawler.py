@@ -15,7 +15,12 @@ class BaseCrawler(ABC):
 
         self.session = requests.Session()
         self.headers = {
-            "User-Agent": "PDFCrawler/1.0 (abc@example.com)"
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/123.0.0.0 Safari/537.36",
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+            "Accept-Language": "en-US,en;q=0.9",
+            "Referer": "https://duckduckgo.com/",
+            "Origin": "https://duckduckgo.com",
+            "Connection": "keep-alive"
         }
 
     def safe_request(self, url, params=None):

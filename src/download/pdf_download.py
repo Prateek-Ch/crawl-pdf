@@ -9,7 +9,14 @@ class PDFDownloader:
 
     def download(self, url, filename, topic):
         try:
-            response = requests.get(url, timeout=10)
+            response = requests.get(url, timeout=20, allow_redirects=True)
+
+            if response.status_code != 200:
+                return False
+
+            content_type = response.headers.get("Content-Type", "").lower()
+            if "pdf" not in content_type and not response.content.startswith(b"%PDF"):
+                return False
 
             if len(response.content) < 50_000:
                 return False

@@ -13,6 +13,7 @@ class MetadataStore:
             "topic": doc.topic,
             "source": doc.source,
             "doc_type": doc.doc_type,
+            "min_pages": doc.min_pages,
             "path": doc.path,
             "pages": doc.pages
         })
