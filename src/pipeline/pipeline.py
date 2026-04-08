@@ -16,26 +16,29 @@ class PDFPipeline:
             batch_size = 10
             start = 0
             successful = 0
+            attempted_urls = set()
+            failed_urls = set()
+            filtered_urls = set()
+            existing_urls = set()
+            empty_urls = 0
 
             no_progress_count = 0
             # max number of consecutive failed batches before stopping
             max_no_progress = 10
-            attempts = 0
-            # max total attempts to fetch documents before giving up on crawler
-            max_attempts = 500
+            # max total unique download attempts before giving up on crawler
+            max_attempts = max(crawler.max_docs * 20, 200)
 
             while successful < crawler.max_docs:
+                if len(attempted_urls) >= max_attempts:
+                    print("Reached max unique attempts. Stopping crawler.")
+                    break
+
                 docs = crawler.fetch_pdf_links_batch(batch_size, start)
                 if not docs:
                     print("No more documents from crawler.")
                     break
 
                 start += len(docs)
-                attempts += len(docs)
-
-                if attempts >= max_attempts:
-                    print("Reached max attempts. Stopping crawler.")
-                    break
 
                 prev_successful = successful
 
@@ -53,20 +56,37 @@ class PDFPipeline:
                     doc.search_query = getattr(crawler, "search_query", None)
                     doc.crawler_name = crawler.__class__.__name__
 
-                    if not doc.url or self.metadata_store.has(doc):
-                        print("Skipping duplicate document")
+                    if not doc.url:
+                        empty_urls += 1
+                        print("Skipping document with empty URL")
                         continue
+
+                    if doc.url in attempted_urls:
+                        print("Skipping URL already attempted in this run")
+                        continue
+
+                    if self.metadata_store.has(doc):
+                        existing_urls.add(doc.url)
+                        print("Skipping document already present in metadata")
+                        continue
+
+                    if len(attempted_urls) >= max_attempts:
+                        print("Reached max unique attempts. Stopping crawler.")
+                        break
+
+                    attempted_urls.add(doc.url)
 
                     print(f"Downloading: {doc.url}")
 
-                    success = self.downloader.download(
+                    success, detail = self.downloader.download(
                         doc.url,
                         filename,
                         self._safe_slug(crawler.topic)
                     )
 
                     if not success:
-                        print("Download failed")
+                        failed_urls.add(doc.url)
+                        print(f"Download failed ({detail})")
                         continue
 
                     if not os.path.exists(doc.path):
@@ -74,6 +94,7 @@ class PDFPipeline:
                         continue
 
                     if not self.filters(doc):
+                        filtered_urls.add(doc.url)
                         print("Filtered out")
                         os.remove(doc.path)
                         continue
@@ -94,6 +115,14 @@ class PDFPipeline:
                     no_progress_count = 0
 
             print(f"Finished {crawler.topic}: {successful} documents collected.")
+            print(
+                "Run stats: "
+                f"attempted={len(attempted_urls)}, "
+                f"failed={len(failed_urls)}, "
+                f"filtered={len(filtered_urls)}, "
+                f"existing={len(existing_urls)}, "
+                f"empty_url={empty_urls}"
+            )
 
         self.metadata_store.save()
         print("Metadata saved.")

@@ -1,11 +1,8 @@
 from .base_crawler import BaseCrawler
 from .document import Document
-from bs4 import BeautifulSoup
-
+from ddgs import DDGS
 
 class DuckDuckGoCrawler(BaseCrawler):
-
-    SEARCH_URL = "https://lite.duckduckgo.com/lite/"
 
     def __init__(self, topic, max_docs, doc_type=None, min_pages=None, search_query=None):
         super().__init__(topic, max_docs, search_query=search_query)
@@ -17,29 +14,19 @@ class DuckDuckGoCrawler(BaseCrawler):
 
     def fetch_pdf_links_batch(self, max_results, start=0):
         query = f"{self.search_query} filetype:pdf"
+        limit = max_results + start
 
-        data = {
-            "q": query
-        }
-
-        response = self.session.post(
-            self.SEARCH_URL,
-            data=data,
-            headers=self.headers,
-            timeout=self.TIMEOUT
-        )
-
-        if not response or response.status_code != 200:
-            print(f"[DuckDuckGoCrawler] Bad status: {response.status_code}")
+        try:
+            results = DDGS().text(query, max_results=limit)
+        except Exception as exc:
+            print(f"[DuckDuckGoCrawler] Search failed: {exc}")
             return []
-
-        soup = BeautifulSoup(response.text, "html.parser")
 
         docs = []
         seen = set()
 
-        for a in soup.find_all("a"):
-            href = a.get("href")
+        for item in results[start:]:
+            href = item.get("href")
 
             if not href:
                 continue
@@ -50,7 +37,7 @@ class DuckDuckGoCrawler(BaseCrawler):
                 docs.append(
                     Document(
                         url=href,
-                        title=a.text.strip(),
+                        title=(item.get("title") or "").strip() or None,
                         topic=self.topic,
                         source="duckduckgo",
                         doc_type=self.doc_type,
