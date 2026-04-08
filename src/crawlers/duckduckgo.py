@@ -3,50 +3,7 @@ from urllib.parse import parse_qs, urlparse, unquote
 
 from .base_crawler import BaseCrawler
 from .document import Document
-
-
-class _DuckDuckGoParser(HTMLParser):
-    def __init__(self):
-        super().__init__()
-        self.results = []
-        self._current_href = None
-        self._capture_text = False
-        self._current_text = []
-
-    def handle_starttag(self, tag, attrs):
-        if tag == "a":
-            attrs = dict(attrs)
-            href = attrs.get("href") or ""
-
-            if "uddg=" in href:
-                self._current_href = href
-                self._capture_text = True
-                self._current_text = []
-
-    def handle_data(self, data):
-        if self._capture_text:
-            self._current_text.append(data)
-
-    def handle_endtag(self, tag):
-        if tag == "a" and self._current_href:
-            parsed = urlparse(self._current_href)
-            query = parse_qs(parsed.query)
-
-            if "uddg" in query:
-                real_url = unquote(query["uddg"][0])
-
-                if ".pdf" in real_url.lower():
-                    title = " ".join(self._current_text).strip()
-
-                    self.results.append({
-                        "url": real_url,
-                        "title": title
-                    })
-
-            self._current_href = None
-            self._capture_text = False
-            self._current_text = []
-
+from bs4 import BeautifulSoup
 class DuckDuckGoCrawler(BaseCrawler):
 
     SEARCH_URL = "https://lite.duckduckgo.com/lite/"
@@ -55,6 +12,7 @@ class DuckDuckGoCrawler(BaseCrawler):
         super().__init__(topic, max_docs)
         self.doc_type = doc_type
         self.min_pages = min_pages
+        self.seen = set()
 
     def fetch_pdf_links(self):
         return self.fetch_pdf_links_batch(self.max_docs, 0)
@@ -67,24 +25,30 @@ class DuckDuckGoCrawler(BaseCrawler):
             "s": str(start)
         }
 
-        response = self.safe_request(self.SEARCH_URL, params=params)
+        response = self.session.post(
+            self.SEARCH_URL,
+            data=data,
+            headers=self.headers,
+            timeout=self.TIMEOUT
+        )
 
-        if not response:
+        if not response or response.status_code != 200:
+            print(f"[DuckDuckGoCrawler] Bad status: {response.status_code}")
             return []
 
-        parser = _DuckDuckGoParser()
-        parser.feed(response.text)
+        soup = BeautifulSoup(response.text, "html.parser")
 
-        # deduplicate
-        seen = set()
         docs = []
+        seen = set()
 
-        for item in parser.results:
-            url = item["url"]
+        for a in soup.find_all("a"):
+            href = a.get("href")
 
-            if url in seen:
+            if not href:
                 continue
-            seen.add(url)
+
+            if ".pdf" in href.lower() and href not in seen:
+                seen.add(href)
 
             doc = Document(
                 url=url,
