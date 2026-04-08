@@ -1,10 +1,16 @@
+from dataclasses import dataclass
+
+
+@dataclass
 class Document:
-    def __init__(self, url, title=None, topic=None, source=None, doc_type=None, min_pages=None):
-        self.url = url
-        self.title = title
-        self.topic = topic
-        self.source = source
-        self.doc_type = doc_type
-        self.min_pages = min_pages
-        self.path = None
-        self.pages = None
+    url: str
+    title: str | None = None
+    topic: str | None = None
+    source: str | None = None
+    doc_type: str | None = None
+    min_pages: int | None = None
+    benchmark: str | None = None
+    search_query: str | None = None
+    crawler_name: str | None = None
+    path: str | None = None
+    pages: int | None = None

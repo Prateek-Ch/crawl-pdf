@@ -7,8 +7,8 @@ class InternetArchiveCrawler(BaseCrawler):
 
     SEARCH_URL = "https://archive.org/advancedsearch.php"
 
-    def __init__(self, topic, max_docs, doc_type="book", min_pages=None):
-        super().__init__(topic, max_docs)
+    def __init__(self, topic, max_docs, doc_type="book", min_pages=None, search_query=None):
+        super().__init__(topic, max_docs, search_query=search_query)
         self.doc_type = doc_type
         self.min_pages = min_pages
     
@@ -17,7 +17,7 @@ class InternetArchiveCrawler(BaseCrawler):
 
     def fetch_pdf_links_batch(self, max_results, start=0):
         params = {
-            "q": f"{self.topic} AND mediatype:texts",
+            "q": f"{self.search_query} AND mediatype:texts",
             "fl[]": "identifier,title",
             "rows": max_results,
             "page": (start // max_results) + 1,
@@ -53,7 +53,10 @@ class InternetArchiveCrawler(BaseCrawler):
                     topic=self.topic,
                     source="internet_archive",
                     doc_type=self.doc_type,
-                    min_pages=self.min_pages
+                    min_pages=self.min_pages,
+                    benchmark=getattr(self, "benchmark", None),
+                    search_query=self.search_query,
+                    crawler_name=self.__class__.__name__,
                 )
             )
 

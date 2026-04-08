@@ -9,9 +9,10 @@ class BaseCrawler(ABC):
     MAX_RETRIES = 3
     TIMEOUT = 20
 
-    def __init__(self, topic, max_docs):
+    def __init__(self, topic, max_docs, search_query=None):
         self.topic = topic
         self.max_docs = max_docs
+        self.search_query = search_query or topic
 
         self.session = requests.Session()
         self.headers = {

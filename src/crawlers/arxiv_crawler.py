@@ -12,7 +12,7 @@ class ArxivCrawler(BaseCrawler):
 
     def fetch_pdf_links_batch(self, max_results, start=0):
         params = {
-            "search_query": f"cat:{self.topic}",
+            "search_query": f"cat:{self.search_query}",
             "max_results": max_results,
             "start": start
         }
@@ -45,7 +45,11 @@ class ArxivCrawler(BaseCrawler):
                     title=title_elem.text.strip() if title_elem is not None and title_elem.text else None,
                     topic=self.topic,
                     source="arxiv",
-                    doc_type="research_paper"
+                    doc_type=getattr(self, "doc_type", "research_paper"),
+                    min_pages=getattr(self, "min_pages", None),
+                    benchmark=getattr(self, "benchmark", None),
+                    search_query=self.search_query,
+                    crawler_name=self.__class__.__name__,
                 )
             )
 

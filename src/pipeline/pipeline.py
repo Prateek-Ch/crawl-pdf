@@ -1,4 +1,6 @@
 import os
+import re
+
 
 class PDFPipeline:
 
@@ -41,41 +43,45 @@ class PDFPipeline:
                     if successful >= crawler.max_docs:
                         break
 
-                    print(f"Downloading: {doc.url}")
+                    filename = self._build_filename(crawler, doc, successful)
+                    doc.path = os.path.join(
+                        self.downloader.save_dir,
+                        self._safe_slug(crawler.topic),
+                        filename
+                    )
+                    doc.benchmark = getattr(crawler, "benchmark", None)
+                    doc.search_query = getattr(crawler, "search_query", None)
+                    doc.crawler_name = crawler.__class__.__name__
 
-                    filename = f"{doc.source}_{crawler.topic}_{successful}.pdf"
+                    if not doc.url or self.metadata_store.has(doc):
+                        print("Skipping duplicate document")
+                        continue
+
+                    print(f"Downloading: {doc.url}")
 
                     success = self.downloader.download(
                         doc.url,
                         filename,
-                        crawler.topic
+                        self._safe_slug(crawler.topic)
                     )
 
                     if not success:
                         print("Download failed")
                         continue
 
-                    path = os.path.join(
-                        self.downloader.save_dir,
-                        crawler.topic,
-                        filename
-                    )
-
-                    doc.path = path
-
-                    if not os.path.exists(path):
+                    if not os.path.exists(doc.path):
                         print("File not found after download")
                         continue
 
                     if not self.filters(doc):
                         print("Filtered out")
-                        os.remove(path)
+                        os.remove(doc.path)
                         continue
 
                     print(f"Saved: {filename}")
 
-                    self.metadata_store.add(doc)
-                    successful += 1
+                    if self.metadata_store.add(doc):
+                        successful += 1
 
                 if successful == prev_successful:
                     no_progress_count += 1
@@ -91,3 +97,12 @@ class PDFPipeline:
 
         self.metadata_store.save()
         print("Metadata saved.")
+
+    def _build_filename(self, crawler, doc, index):
+        topic_slug = self._safe_slug(crawler.topic)
+        title_slug = self._safe_slug(doc.title or f"document_{index}")[:80]
+        return f"{doc.source}_{topic_slug}_{index:04d}_{title_slug}.pdf"
+
+    def _safe_slug(self, value):
+        slug = re.sub(r"[^A-Za-z0-9._-]+", "_", value.strip())
+        return slug.strip("._") or "untitled"

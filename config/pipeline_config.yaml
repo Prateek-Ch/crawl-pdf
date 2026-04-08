@@ -1,0 +1,81 @@
+benchmarks:
+  - name: MMLongBench
+    sources:
+      - crawler: duckduckgo
+        query: research report OR annual report OR whitepaper
+        doc_type: research_report
+        min_pages: 35
+        max_docs: 1
+      - crawler: duckduckgo
+        query: financial report OR annual report investor relations
+        doc_type: financial_report
+        min_pages: 35
+        max_docs: 1
+      - crawler: arxiv
+        query: cs.CL
+        doc_type: academic_paper
+        min_pages: 12
+        max_docs: 1
+      - crawler: duckduckgo
+        query: brochure OR product brochure OR company brochure
+        doc_type: brochure
+        min_pages: 8
+        max_docs: 1
+      - crawler: duckduckgo
+        query: guideline OR policy guideline OR operating guideline
+        doc_type: guideline
+        min_pages: 15
+        max_docs: 1
+      - crawler: internet_archive
+        query: administration industry handbook
+        doc_type: administration_and_industry_file
+        min_pages: 20
+        max_docs: 1
+      - crawler: duckduckgo
+        query: tutorial OR workshop notes OR workshop handbook
+        doc_type: tutorial_or_workshop
+        min_pages: 20
+        max_docs: 1
+
+  - name: LongDocURL
+    sources:
+      - crawler: duckduckgo
+        query: research report OR technical paper OR whitepaper
+        doc_type: research_reports_and_papers
+        min_pages: 40
+        max_docs: 1
+      - crawler: duckduckgo
+        query: user manual OR installation guide OR operating manual
+        doc_type: user_manuals_and_guides
+        min_pages: 40
+        max_docs: 1
+      - crawler: internet_archive
+        query: ebook OR handbook OR textbook
+        doc_type: books_and_ebooks
+        min_pages: 80
+        max_docs: 1
+      - crawler: duckduckgo
+        query: thesis OR dissertation
+        doc_type: theses_and_dissertations
+        min_pages: 60
+        max_docs: 1
+      - crawler: duckduckgo
+        query: work summary OR project summary OR final report
+        doc_type: work_and_project_summaries
+        min_pages: 25
+        max_docs: 1
+      - crawler: duckduckgo
+        query: presentation slides OR deck OR seminar slides
+        doc_type: presentation_materials
+        min_pages: 25
+        max_docs: 1
+      - crawler: duckduckgo
+        query: project proposal OR proposal document
+        doc_type: project_proposals
+        min_pages: 20
+        max_docs: 1
+      - crawler: duckduckgo
+        query: meeting minutes OR summary minutes
+        doc_type: meeting_minutes_and_summaries
+        min_pages: 10
+        max_docs: 1
