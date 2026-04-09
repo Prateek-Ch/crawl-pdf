@@ -3,6 +3,7 @@ from pathlib import Path
 import yaml
 
 from src.crawlers import ArxivCrawler, DuckDuckGoCrawler, InternetArchiveCrawler
+from src.download.attempt_store import AttemptStore
 from src.download.metadata import MetadataStore
 from src.download.pdf_download import PDFDownloader
 from src.pipeline.pipeline import PDFPipeline
@@ -51,6 +52,8 @@ def build_crawlers(config_path=CONFIG_PATH):
                     search_query=query,
                 )
             elif crawler_name == "duckduckgo":
+                if DuckDuckGoCrawler is None:
+                    raise ImportError("DuckDuckGoCrawler requires the optional 'ddgs' dependency")
                 crawler = DuckDuckGoCrawler(
                     topic=topic,
                     max_docs=source["max_docs"],
@@ -80,6 +83,11 @@ def main():
         downloader=PDFDownloader(save_dir="data/raw/"),
         filters=is_valid_pdf,
         metadata_store=MetadataStore("data/metadata.json"),
+        attempt_store=AttemptStore(
+            state_path="data/attempt_state.json",
+            events_path="data/attempt_events.jsonl",
+        ),
+        run_summary_dir="data/run_summaries",
     )
     pipeline.run()
 

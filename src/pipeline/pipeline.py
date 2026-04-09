@@ -1,17 +1,28 @@
 import os
 import re
+import json
+from datetime import datetime, timezone
 from urllib.parse import urlparse
 
 
 class PDFPipeline:
 
-    def __init__(self, crawlers, downloader, filters, metadata_store):
+    def __init__(self, crawlers, downloader, filters, metadata_store, attempt_store=None, run_summary_dir=None):
         self.crawlers = crawlers
         self.downloader = downloader
         self.filters = filters
         self.metadata_store = metadata_store
+        self.attempt_store = attempt_store
+        self.run_summary_dir = run_summary_dir
+        self.run_id = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
 
     def run(self):
+        run_summary = {
+            "run_id": self.run_id,
+            "started_at": datetime.now(timezone.utc).isoformat(),
+            "crawlers": [],
+        }
+
         for crawler in self.crawlers:
             print(f"\n=== Running crawler: {crawler.__class__.__name__} ({crawler.topic}) ===")
             batch_size = getattr(crawler, "batch_size", 10)
@@ -24,6 +35,7 @@ class PDFPipeline:
             existing_urls = set()
             rejected_urls = set()
             empty_urls = 0
+            skipped_urls = set()
 
             no_progress_count = 0
             # max number of consecutive failed batches before stopping
@@ -72,12 +84,23 @@ class PDFPipeline:
 
                     if self.metadata_store.has(doc):
                         existing_urls.add(doc.url)
+                        if self.attempt_store:
+                            self.attempt_store.record(doc, "existing", "already_in_metadata", run_id=self.run_id)
                         print("Skipping document already present in metadata")
                         continue
+
+                    if self.attempt_store:
+                        should_skip, skip_reason = self.attempt_store.should_skip(doc.url)
+                        if should_skip:
+                            skipped_urls.add(doc.url)
+                            print(f"Skipping document based on attempt history ({skip_reason})")
+                            continue
 
                     is_match, reason = self._matches_candidate_rules(doc, crawler)
                     if not is_match:
                         rejected_urls.add(doc.url)
+                        if self.attempt_store:
+                            self.attempt_store.record(doc, "rejected", reason, run_id=self.run_id)
                         print(f"Rejected candidate ({reason})")
                         continue
 
@@ -97,15 +120,21 @@ class PDFPipeline:
 
                     if not success:
                         failed_urls.add(doc.url)
+                        if self.attempt_store:
+                            self.attempt_store.record(doc, "download_failed", detail, run_id=self.run_id)
                         print(f"Download failed ({detail})")
                         continue
 
                     if not os.path.exists(doc.path):
+                        if self.attempt_store:
+                            self.attempt_store.record(doc, "download_failed", "missing_downloaded_file", run_id=self.run_id)
                         print("File not found after download")
                         continue
 
                     if not self.filters(doc):
                         filtered_urls.add(doc.url)
+                        if self.attempt_store:
+                            self.attempt_store.record(doc, "filtered", "failed_pdf_filter", run_id=self.run_id)
                         print("Filtered out")
                         os.remove(doc.path)
                         continue
@@ -113,6 +142,8 @@ class PDFPipeline:
                     print(f"Saved: {filename}")
 
                     if self.metadata_store.add(doc):
+                        if self.attempt_store:
+                            self.attempt_store.record(doc, "saved", "success", run_id=self.run_id)
                         successful += 1
 
                 if successful == prev_successful:
@@ -130,14 +161,35 @@ class PDFPipeline:
                 "Run stats: "
                 f"seen={len(seen_urls)}, "
                 f"attempted={len(attempted_urls)}, "
+                f"skipped={len(skipped_urls)}, "
                 f"failed={len(failed_urls)}, "
                 f"filtered={len(filtered_urls)}, "
                 f"rejected={len(rejected_urls)}, "
                 f"existing={len(existing_urls)}, "
                 f"empty_url={empty_urls}"
             )
+            run_summary["crawlers"].append({
+                "topic": crawler.topic,
+                "benchmark": getattr(crawler, "benchmark", None),
+                "doc_type": getattr(crawler, "doc_type", None),
+                "source": crawler.__class__.__name__,
+                "target_docs": crawler.max_docs,
+                "collected_docs": successful,
+                "seen": len(seen_urls),
+                "attempted": len(attempted_urls),
+                "skipped": len(skipped_urls),
+                "failed": len(failed_urls),
+                "filtered": len(filtered_urls),
+                "rejected": len(rejected_urls),
+                "existing": len(existing_urls),
+                "empty_url": empty_urls,
+            })
 
         self.metadata_store.save()
+        if self.attempt_store:
+            self.attempt_store.save()
+        run_summary["finished_at"] = datetime.now(timezone.utc).isoformat()
+        self._save_run_summary(run_summary)
         print("Metadata saved.")
 
     def _build_filename(self, crawler, doc, index):
@@ -177,3 +229,17 @@ class PDFPipeline:
             return False, "missing_required_term"
 
         return True, None
+
+    def _save_run_summary(self, run_summary):
+        if not self.run_summary_dir:
+            return
+
+        os.makedirs(self.run_summary_dir, exist_ok=True)
+        latest_path = os.path.join(self.run_summary_dir, "latest.json")
+        archived_path = os.path.join(self.run_summary_dir, f"{self.run_id}.json")
+
+        with open(latest_path, "w", encoding="utf-8") as f:
+            json.dump(run_summary, f, indent=2, ensure_ascii=False)
+
+        with open(archived_path, "w", encoding="utf-8") as f:
+            json.dump(run_summary, f, indent=2, ensure_ascii=False)
