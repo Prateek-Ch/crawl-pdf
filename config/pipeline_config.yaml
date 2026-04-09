@@ -2,80 +2,122 @@ benchmarks:
   - name: MMLongBench
     sources:
       - crawler: duckduckgo
-        query: research report OR annual report OR whitepaper
+        query: research report OR field report OR annual report pdf
         doc_type: research_report
         min_pages: 35
         max_docs: 1
+        include_any: [report, research, annual]
+        exclude_any: [brochure, template, guide, guidelines, how to, proposal]
+        blocked_domains: [template.net, pdffiller.com]
       - crawler: duckduckgo
-        query: financial report OR annual report investor relations
+        query: annual report investor relations financial statements
         doc_type: financial_report
         min_pages: 35
         max_docs: 1
+        include_any: [annual report, financial, financial statements, investor relations]
+        exclude_any: [guide, toolkit, fundamentals, template, training]
       - crawler: arxiv
         query: cs.CL
         doc_type: academic_paper
         min_pages: 12
         max_docs: 1
       - crawler: duckduckgo
-        query: brochure OR product brochure OR company brochure
+        query: product brochure pdf OR company brochure pdf
         doc_type: brochure
         min_pages: 8
         max_docs: 1
+        include_any: [brochure]
+        exclude_any: [annual report, template, guide, handbook, manual, catalog]
+        blocked_domains: [template.net, pdffiller.com]
+        max_no_progress: 4
       - crawler: duckduckgo
-        query: guideline OR policy guideline OR operating guideline
+        query: policy guideline pdf OR operating guideline pdf OR procedure manual pdf
         doc_type: guideline
         min_pages: 15
         max_docs: 1
+        include_any: [guideline, guidelines, policy, procedure]
+        exclude_any: [comparison, brochure, template, sample]
       - crawler: internet_archive
-        query: administration industry handbook
+        query: administration handbook OR industry handbook OR operations manual
         doc_type: administration_and_industry_file
         min_pages: 20
         max_docs: 1
+        include_any: [handbook, manual, administration, industry, operations]
+        exclude_any: [cia, readingroom, document, report]
+        max_no_progress: 5
+        max_attempts: 60
       - crawler: duckduckgo
-        query: tutorial OR workshop notes OR workshop handbook
+        query: workshop manual pdf OR workshop notes pdf OR tutorial handbook pdf
         doc_type: tutorial_or_workshop
         min_pages: 20
         max_docs: 1
+        include_any: [tutorial, workshop, manual, handbook, notes, lab]
+        exclude_any: [template, brochure]
 
   - name: LongDocURL
     sources:
       - crawler: duckduckgo
-        query: research report OR technical paper OR whitepaper
+        query: technical report pdf OR research paper pdf OR white paper pdf
         doc_type: research_reports_and_papers
         min_pages: 40
         max_docs: 1
+        include_any: [report, paper, white paper, technical]
+        exclude_any: [how to, guide, guidelines, template, proposal, sample]
+        blocked_domains: [template.net, pdffiller.com]
       - crawler: duckduckgo
-        query: user manual OR installation guide OR operating manual
+        query: user manual pdf OR installation guide pdf OR operating manual pdf
         doc_type: user_manuals_and_guides
         min_pages: 40
         max_docs: 1
+        include_any: [user manual, installation guide, operating manual, user guide]
+        exclude_any: [brochure, datasheet, quick start, flyer]
       - crawler: internet_archive
-        query: ebook OR handbook OR textbook
+        query: handbook OR textbook OR reference manual
         doc_type: books_and_ebooks
         min_pages: 80
         max_docs: 1
+        include_any: [book, handbook, textbook, manual]
+        exclude_any: [eric, dtic, report, bulletin, proceedings]
+        max_no_progress: 5
+        max_attempts: 80
       - crawler: duckduckgo
-        query: thesis OR dissertation
+        query: phd thesis pdf OR dissertation pdf
         doc_type: theses_and_dissertations
         min_pages: 60
         max_docs: 1
+        include_any: [thesis, dissertation, phd]
+        exclude_any: [guide, guidelines, manual, how to, template, format]
       - crawler: duckduckgo
-        query: work summary OR project summary OR final report
+        query: project final report pdf OR executive summary pdf OR project summary pdf
         doc_type: work_and_project_summaries
         min_pages: 25
         max_docs: 1
+        include_any: [project, final report, executive summary, summary]
+        exclude_any: [template, sample, annotated, index, how to]
+        max_no_progress: 4
       - crawler: duckduckgo
-        query: presentation slides OR deck OR seminar slides
+        query: seminar slides filetype:pdf OR lecture slides filetype:pdf OR presentation deck pdf
         doc_type: presentation_materials
         min_pages: 25
         max_docs: 1
+        include_any: [slides, presentation, seminar, lecture, deck]
+        exclude_any: [template, design, tips, how to]
+        allowed_domains: [edu, ac.uk, org]
+        max_no_progress: 4
       - crawler: duckduckgo
-        query: project proposal OR proposal document
+        query: project proposal pdf OR grant proposal pdf
         doc_type: project_proposals
         min_pages: 20
         max_docs: 1
+        include_any: [proposal, project, grant]
+        exclude_any: [how to, template, sample, format, writing, successful]
+        max_no_progress: 4
       - crawler: duckduckgo
-        query: meeting minutes OR summary minutes
+        query: board meeting minutes pdf OR committee meeting minutes pdf
         doc_type: meeting_minutes_and_summaries
         min_pages: 10
         max_docs: 1
+        include_any: [meeting minutes, minutes, board, committee]
+        exclude_any: [guide, template, sample, how to, generator]
+        allowed_domains: [org, gov, edu]
+        max_no_progress: 4

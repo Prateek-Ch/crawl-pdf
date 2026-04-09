@@ -12,5 +12,6 @@ class Document:
     benchmark: str | None = None
     search_query: str | None = None
     crawler_name: str | None = None
+    snippet: str | None = None
     path: str | None = None
     pages: int | None = None

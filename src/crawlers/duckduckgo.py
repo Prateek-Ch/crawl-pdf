@@ -45,6 +45,7 @@ class DuckDuckGoCrawler(BaseCrawler):
                         benchmark=getattr(self, "benchmark", None),
                         search_query=self.search_query,
                         crawler_name=self.__class__.__name__,
+                        snippet=(item.get("body") or "").strip() or None,
                     )
                 )
 

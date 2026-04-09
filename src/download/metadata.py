@@ -46,6 +46,7 @@ class MetadataStore:
         record = {
             "url": doc.url,
             "title": doc.title,
+            "snippet": doc.snippet,
             "benchmark": doc.benchmark,
             "topic": doc.topic,
             "source": doc.source,
