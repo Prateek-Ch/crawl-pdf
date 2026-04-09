@@ -69,6 +69,7 @@ def build_crawlers(config_path=CONFIG_PATH):
             crawler.exclude_any = source.get("exclude_any", [])
             crawler.allowed_domains = source.get("allowed_domains", [])
             crawler.blocked_domains = source.get("blocked_domains", [])
+            crawler.query_variants = source.get("query_variants", [])
             crawler.batch_size = source.get("batch_size", 10)
             crawler.max_attempts = source.get("max_attempts")
             crawler.max_no_progress = source.get("max_no_progress", 10)

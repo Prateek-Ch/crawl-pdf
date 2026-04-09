@@ -13,6 +13,8 @@ class AttemptStore:
         "request_error:ReadTimeout",
         "request_error:ProxyError",
         "request_error:TooManyRedirects",
+        "http_202",
+        "http_408",
         "http_429",
         "http_500",
         "http_502",

@@ -202,6 +202,7 @@ class PDFPipeline:
         return slug.strip("._") or "untitled"
 
     def _matches_candidate_rules(self, doc, crawler):
+        parsed_url = urlparse(doc.url)
         haystack = " ".join(
             part for part in [
                 doc.title or "",
@@ -214,7 +215,14 @@ class PDFPipeline:
         exclude_any = [term.lower() for term in getattr(crawler, "exclude_any", [])]
         allowed_domains = [domain.lower() for domain in getattr(crawler, "allowed_domains", [])]
         blocked_domains = [domain.lower() for domain in getattr(crawler, "blocked_domains", [])]
-        domain = (urlparse(doc.url).netloc or "").lower()
+        domain = (parsed_url.netloc or "").lower()
+        path = (parsed_url.path or "").lower()
+
+        if domain == "github.com" and "/blob/" in path:
+            return False, "html_wrapper"
+
+        if domain in {"github.com", "www.github.com"} and not path.endswith(".pdf"):
+            return False, "html_wrapper"
 
         if blocked_domains and any(domain == blocked or domain.endswith(f".{blocked}") for blocked in blocked_domains):
             return False, "blocked_domain"

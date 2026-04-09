@@ -3,121 +3,170 @@ benchmarks:
     sources:
       - crawler: duckduckgo
         query: research report OR field report OR annual report pdf
+        query_variants:
+          - technical report pdf OR research report pdf
+          - final research report pdf OR annual research report pdf
+          - field study report pdf OR survey report pdf
         doc_type: research_report
         min_pages: 35
-        max_docs: 1
-        include_any: [report, research, annual]
-        exclude_any: [brochure, template, guide, guidelines, how to, proposal]
+        max_docs: 20
+        include_any: [report, research, annual, technical, study]
+        exclude_any: [brochure, template, guide, guidelines, how to, proposal, format]
         blocked_domains: [template.net, pdffiller.com]
       - crawler: duckduckgo
         query: annual report investor relations financial statements
+        query_variants:
+          - annual financial statements pdf investor relations
+          - investor relations annual report pdf
+          - audited financial statements annual report pdf
         doc_type: financial_report
         min_pages: 35
-        max_docs: 1
+        max_docs: 20
         include_any: [annual report, financial, financial statements, investor relations]
         exclude_any: [guide, toolkit, fundamentals, template, training]
       - crawler: arxiv
         query: cs.CL
         doc_type: academic_paper
         min_pages: 12
-        max_docs: 1
+        max_docs: 20
       - crawler: duckduckgo
         query: product brochure pdf OR company brochure pdf
+        query_variants:
+          - corporate brochure pdf
+          - service brochure pdf
+          - marketing brochure pdf
         doc_type: brochure
         min_pages: 8
-        max_docs: 1
+        max_docs: 20
         include_any: [brochure]
-        exclude_any: [annual report, template, guide, handbook, manual, catalog]
+        exclude_any: [annual report, template, guide, handbook, manual]
         blocked_domains: [template.net, pdffiller.com]
         max_no_progress: 4
       - crawler: duckduckgo
         query: policy guideline pdf OR operating guideline pdf OR procedure manual pdf
+        query_variants:
+          - standard operating procedure pdf
+          - policy and procedure manual pdf
+          - office procedure manual pdf
         doc_type: guideline
         min_pages: 15
-        max_docs: 1
-        include_any: [guideline, guidelines, policy, procedure]
+        max_docs: 20
+        include_any: [guideline, guidelines, policy, procedure, manual, sop]
         exclude_any: [comparison, brochure, template, sample]
       - crawler: internet_archive
         query: administration handbook OR industry handbook OR operations manual
         doc_type: administration_and_industry_file
         min_pages: 20
-        max_docs: 1
+        max_docs: 20
         include_any: [handbook, manual, administration, industry, operations]
         exclude_any: [cia, readingroom, document, report]
         max_no_progress: 5
         max_attempts: 60
       - crawler: duckduckgo
         query: workshop manual pdf OR workshop notes pdf OR tutorial handbook pdf
+        query_variants:
+          - lab manual pdf tutorial
+          - training manual pdf workshop
+          - course manual pdf practical handbook
         doc_type: tutorial_or_workshop
         min_pages: 20
-        max_docs: 1
-        include_any: [tutorial, workshop, manual, handbook, notes, lab]
-        exclude_any: [template, brochure]
+        max_docs: 20
+        include_any: [tutorial, workshop, manual, handbook, notes, lab, training, course]
+        exclude_any: [template, brochure, workbook]
 
   - name: LongDocURL
     sources:
       - crawler: duckduckgo
         query: technical report pdf OR research paper pdf OR white paper pdf
+        query_variants:
+          - working paper pdf OR technical report pdf
+          - research monograph pdf OR research report pdf
+          - policy report pdf OR analytical report pdf
         doc_type: research_reports_and_papers
         min_pages: 40
-        max_docs: 1
-        include_any: [report, paper, white paper, technical]
-        exclude_any: [how to, guide, guidelines, template, proposal, sample]
+        max_docs: 20
+        include_any: [report, paper, white paper, technical, working paper, monograph]
+        exclude_any: [how to, guide, guidelines, template, proposal, sample, format]
         blocked_domains: [template.net, pdffiller.com]
       - crawler: duckduckgo
         query: user manual pdf OR installation guide pdf OR operating manual pdf
+        query_variants:
+          - instruction manual pdf
+          - operator manual pdf
+          - service manual pdf
         doc_type: user_manuals_and_guides
         min_pages: 40
-        max_docs: 1
-        include_any: [user manual, installation guide, operating manual, user guide]
+        max_docs: 20
+        include_any: [user manual, installation guide, operating manual, user guide, instruction manual, operator manual, service manual]
         exclude_any: [brochure, datasheet, quick start, flyer]
       - crawler: internet_archive
         query: handbook OR textbook OR reference manual
         doc_type: books_and_ebooks
         min_pages: 80
-        max_docs: 1
+        max_docs: 20
         include_any: [book, handbook, textbook, manual]
         exclude_any: [eric, dtic, report, bulletin, proceedings]
         max_no_progress: 5
         max_attempts: 80
       - crawler: duckduckgo
         query: phd thesis pdf OR dissertation pdf
+        query_variants:
+          - doctoral dissertation pdf
+          - phd dissertation pdf
+          - thesis final pdf
         doc_type: theses_and_dissertations
         min_pages: 60
-        max_docs: 1
-        include_any: [thesis, dissertation, phd]
-        exclude_any: [guide, guidelines, manual, how to, template, format]
+        max_docs: 20
+        include_any: [thesis, dissertation, phd, doctoral]
+        exclude_any: [guide, guidelines, manual, how to, template, format, announcement]
       - crawler: duckduckgo
         query: project final report pdf OR executive summary pdf OR project summary pdf
+        query_variants:
+          - completion report pdf project
+          - deliverable final report pdf
+          - implementation report pdf project
         doc_type: work_and_project_summaries
         min_pages: 25
-        max_docs: 1
-        include_any: [project, final report, executive summary, summary]
-        exclude_any: [template, sample, annotated, index, how to]
+        max_docs: 20
+        include_any: [project, final report, executive summary, summary, completion report, deliverable, implementation report]
+        exclude_any: [template, sample, annotated, index, how to, specification]
         max_no_progress: 4
       - crawler: duckduckgo
-        query: seminar slides filetype:pdf OR lecture slides filetype:pdf OR presentation deck pdf
+        query: seminar slides pdf OR lecture slides pdf OR presentation deck pdf
+        query_variants:
+          - conference slides pdf
+          - course slides pdf
+          - lecture presentation pdf
         doc_type: presentation_materials
         min_pages: 25
-        max_docs: 1
-        include_any: [slides, presentation, seminar, lecture, deck]
+        max_docs: 20
+        include_any: [slides, presentation, seminar, lecture, deck, conference, course]
         exclude_any: [template, design, tips, how to]
-        allowed_domains: [edu, ac.uk, org]
+        allowed_domains: [edu, ac.uk, org, gov]
         max_no_progress: 4
       - crawler: duckduckgo
         query: project proposal pdf OR grant proposal pdf
+        query_variants:
+          - research proposal pdf
+          - project concept note pdf
+          - proposal submission pdf
         doc_type: project_proposals
         min_pages: 20
-        max_docs: 1
-        include_any: [proposal, project, grant]
-        exclude_any: [how to, template, sample, format, writing, successful]
+        max_docs: 20
+        include_any: [proposal, project, grant, research proposal, concept note]
+        exclude_any: [how to, template, sample, format, writing, successful, development]
+        allowed_domains: [org, edu, gov]
         max_no_progress: 4
       - crawler: duckduckgo
         query: board meeting minutes pdf OR committee meeting minutes pdf
+        query_variants:
+          - regular meeting minutes pdf board
+          - governing board minutes pdf
+          - council meeting minutes pdf pdf
         doc_type: meeting_minutes_and_summaries
         min_pages: 10
-        max_docs: 1
-        include_any: [meeting minutes, minutes, board, committee]
+        max_docs: 20
+        include_any: [meeting minutes, minutes, board, committee, council, governing]
         exclude_any: [guide, template, sample, how to, generator]
         allowed_domains: [org, gov, edu]
         max_no_progress: 4
